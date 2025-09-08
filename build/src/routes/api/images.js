@@ -33,7 +33,7 @@ imagesRouter.get('/', async (req, res) => {
         // التحقق مما إذا كانت الصورة المعالجة موجودة مسبقاً
         if ((0, imageProcessing_1.thumbnailExists)(validatedFilename, validatedWidth, validatedHeight)) {
             const thumbnailName = `${validatedFilename}_${validatedWidth}_${validatedHeight}.jpg`;
-            imagePath = path_1.default.join(__dirname, '../../../thumbnails', thumbnailName);
+            imagePath = path_1.default.join(__dirname, '../../../../thumbnails', thumbnailName);
         }
         else {
             // معالجة الصورة إذا لم تكن موجودة مسبقاً
@@ -48,4 +48,3 @@ imagesRouter.get('/', async (req, res) => {
     }
 });
 exports.default = imagesRouter;
-//# sourceMappingURL=images.js.map

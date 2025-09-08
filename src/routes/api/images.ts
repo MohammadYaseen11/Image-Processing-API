@@ -46,7 +46,7 @@ imagesRouter.get('/', async (req: Request, res: Response): Promise<void> => {
     // التحقق مما إذا كانت الصورة المعالجة موجودة مسبقاً
     if (thumbnailExists(validatedFilename, validatedWidth, validatedHeight)) {
       const thumbnailName = `${validatedFilename}_${validatedWidth}_${validatedHeight}.jpg`;
-      imagePath = path.join(__dirname, '../../../thumbnails', thumbnailName);
+      imagePath = path.join(__dirname, '../../../../thumbnails', thumbnailName);
     } else {
       // معالجة الصورة إذا لم تكن موجودة مسبقاً
       imagePath = await processImage(

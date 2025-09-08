@@ -9,6 +9,12 @@ export interface ImageQuery {
   height: number;
 }
 
+// دالة للحصول على المجلد الجذر للمشروع
+const getProjectRoot = (): string => {
+  // عندما نعمل من build/src/utils، نحتاج للعودة 3 مستويات للوصول للجذر
+  return path.resolve(__dirname, '../../../');
+};
+
 // دالة للعثور على الصورة الأصلية بأي امتداد 🔍
 const findImageFile = (filename: string): string | null => {
   const extensions = [
@@ -20,7 +26,7 @@ const findImageFile = (filename: string): string | null => {
     '.tiff',
     '.webp',
   ];
-  const imagesDir = path.join(__dirname, '../../images');
+  const imagesDir = path.join(getProjectRoot(), 'images');
 
   for (const ext of extensions) {
     const imagePath = path.join(imagesDir, `${filename}${ext}`);
@@ -37,32 +43,32 @@ export const imageExists = (filename: string): boolean => {
   return findImageFile(filename) !== null;
 };
 
-// دالة للتحقق من وجود الصورة المعالجة مسبقاً (تم الإبقاء عليها كما هي)
+// دالة للتحقق من وجود الصورة المعالجة مسبقاً (تم تصحيح المسار)
 export const thumbnailExists = (
   filename: string,
   width: number,
   height: number
 ): boolean => {
   const thumbnailName = `${filename}_${width}_${height}.jpg`;
-  const thumbnailPath = path.join(__dirname, '../../thumbnails', thumbnailName);
+  const thumbnailPath = path.join(getProjectRoot(), 'thumb', thumbnailName);
   return fs.existsSync(thumbnailPath);
 };
 
-// الدالة الرئيسية لمعالجة الصور (تم تعديلها لاستخدام findImageFile)
+// الدالة الرئيسية لمعالجة الصور (تم تصحيح المسار)
 export const processImage = async (
   filename: string,
   width: number,
   height: number
 ): Promise<string> => {
   try {
-    // إنشاء مجلد thumbnails إذا لم يكن موجوداً
-    const thumbnailsDir = path.join(__dirname, '../../thumbnails');
-    if (!fs.existsSync(thumbnailsDir)) {
-      fs.mkdirSync(thumbnailsDir);
+    // إنشاء مجلد thumb إذا لم يكن موجوداً
+    const thumbDir = path.join(getProjectRoot(), 'thumb');
+    if (!fs.existsSync(thumbDir)) {
+      fs.mkdirSync(thumbDir, { recursive: true });
     }
 
     const thumbnailName = `${filename}_${width}_${height}.jpg`;
-    const outputPath = path.join(thumbnailsDir, thumbnailName);
+    const outputPath = path.join(thumbDir, thumbnailName);
 
     // استخدام الدالة الجديدة للعثور على المسار الصحيح 🖼️
     const inputPath = findImageFile(filename);
@@ -74,7 +80,7 @@ export const processImage = async (
     // معالجة الصورة باستخدام sharp
     await sharp(inputPath)
       .resize(width, height)
-      .jpeg({ quality: 90 }) // يمكنك تغيير الامتداد الناتج هنا (مثل .png)
+      .jpeg({ quality: 90 })
       .toFile(outputPath);
 
     return outputPath;

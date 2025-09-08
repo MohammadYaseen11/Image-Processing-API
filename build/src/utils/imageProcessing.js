@@ -7,6 +7,11 @@ exports.validateInputs = exports.processImage = exports.thumbnailExists = export
 const sharp_1 = __importDefault(require("sharp"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
+// دالة للحصول على المجلد الجذر للمشروع
+const getProjectRoot = () => {
+    // عندما نعمل من build/src/utils، نحتاج للعودة 3 مستويات للوصول للجذر
+    return path_1.default.resolve(__dirname, '../../../');
+};
 // دالة للعثور على الصورة الأصلية بأي امتداد 🔍
 const findImageFile = (filename) => {
     const extensions = [
@@ -18,7 +23,7 @@ const findImageFile = (filename) => {
         '.tiff',
         '.webp',
     ];
-    const imagesDir = path_1.default.join(__dirname, '../../images');
+    const imagesDir = path_1.default.join(getProjectRoot(), 'images');
     for (const ext of extensions) {
         const imagePath = path_1.default.join(imagesDir, `${filename}${ext}`);
         if (fs_1.default.existsSync(imagePath)) {
@@ -32,23 +37,23 @@ const imageExists = (filename) => {
     return findImageFile(filename) !== null;
 };
 exports.imageExists = imageExists;
-// دالة للتحقق من وجود الصورة المعالجة مسبقاً (تم الإبقاء عليها كما هي)
+// دالة للتحقق من وجود الصورة المعالجة مسبقاً (تم تصحيح المسار)
 const thumbnailExists = (filename, width, height) => {
     const thumbnailName = `${filename}_${width}_${height}.jpg`;
-    const thumbnailPath = path_1.default.join(__dirname, '../../thumbnails', thumbnailName);
+    const thumbnailPath = path_1.default.join(getProjectRoot(), 'thumb', thumbnailName);
     return fs_1.default.existsSync(thumbnailPath);
 };
 exports.thumbnailExists = thumbnailExists;
-// الدالة الرئيسية لمعالجة الصور (تم تعديلها لاستخدام findImageFile)
+// الدالة الرئيسية لمعالجة الصور (تم تصحيح المسار)
 const processImage = async (filename, width, height) => {
     try {
-        // إنشاء مجلد thumbnails إذا لم يكن موجوداً
-        const thumbnailsDir = path_1.default.join(__dirname, '../../thumbnails');
-        if (!fs_1.default.existsSync(thumbnailsDir)) {
-            fs_1.default.mkdirSync(thumbnailsDir);
+        // إنشاء مجلد thumb إذا لم يكن موجوداً
+        const thumbDir = path_1.default.join(getProjectRoot(), 'thumb');
+        if (!fs_1.default.existsSync(thumbDir)) {
+            fs_1.default.mkdirSync(thumbDir, { recursive: true });
         }
         const thumbnailName = `${filename}_${width}_${height}.jpg`;
-        const outputPath = path_1.default.join(thumbnailsDir, thumbnailName);
+        const outputPath = path_1.default.join(thumbDir, thumbnailName);
         // استخدام الدالة الجديدة للعثور على المسار الصحيح 🖼️
         const inputPath = findImageFile(filename);
         if (!inputPath) {
@@ -57,7 +62,7 @@ const processImage = async (filename, width, height) => {
         // معالجة الصورة باستخدام sharp
         await (0, sharp_1.default)(inputPath)
             .resize(width, height)
-            .jpeg({ quality: 90 }) // يمكنك تغيير الامتداد الناتج هنا (مثل .png)
+            .jpeg({ quality: 90 })
             .toFile(outputPath);
         return outputPath;
     }
@@ -84,4 +89,3 @@ const validateInputs = (query) => {
     return null;
 };
 exports.validateInputs = validateInputs;
-//# sourceMappingURL=imageProcessing.js.map
